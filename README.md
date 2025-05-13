@@ -20,8 +20,11 @@ A Python-based implementation of a five-grade maturity model for assessing cyber
 ---
 
 ## 🚀 Overview
+Cybersecurity will be key for the new and future vehicles that depend on the exchange of data with the infrastructure. These vehicles will bring countless new features and are potentially capable of autonomous driving. This repository provides a simulator based on the research outlined above, with the primary goal of enabling users to simulate the five-grade rating framework designed to assess the cybersecurity quality of future vehicles and their components. The objective is to establish a trustable and reliable environment for these advanced technologies. Based on the standards used for secure software development and security assessment we defined a procedure for the evaluation of security of the technological components of a car.
 
-## 🧠 Core Concepts
+## 🧠 High-level view of the 5-grade framework
+
+![image](https://github.com/user-attachments/assets/2999d0dd-e667-45a2-8003-e2a742841f3b)
 
 ## 📦 Installation
 ```bash
