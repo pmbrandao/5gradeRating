@@ -24,7 +24,7 @@ Cybersecurity will be key for the new and future vehicles that depend on the exc
 
 ## 🧠 High-level view of the 5-grade framework
 
-![image](https://github.com/user-attachments/assets/2999d0dd-e667-45a2-8003-e2a742841f3b)
+![image](https://github.com/user-attachments/assets/1dd12d54-c210-4cbb-a520-4dcfd454195c)
 
 ## 📦 Installation
 ```bash
