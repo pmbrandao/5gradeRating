@@ -181,8 +181,29 @@ def componentRatingCalculus(valW: float, valM: float, valL: float) -> float:
 
     return componentRatingfinal_grade
 
+def addComponentToCategory(categoriesValues, asil, cal, dp, iso, risk, cRating):
+    """Adds the current component to the correct category"""
 
-# Calculates the vehicle 5-grade rating part A
+    # Check if component rating is between 0 and 5
+    if cRating >= 0 and cRating <= 5:
+        # Class D
+        if (asil == "D" or asil == "C") or ((asil == "B" or asil == "A") and (cal == 4 or cal == 3) and risk == "High"):
+            categoriesValues[0].append(cRating)
+
+        # Class C
+        elif ((asil == "B" or asil == "A") and cal == 2 and dp == "Yes") or risk in ["Moderate", "Low"]:
+            categoriesValues[1].append(cRating)
+
+        # Class B
+        elif ((asil == "B" or asil == "A") and cal == 2 and dp == "No" and iso == "No") or risk in ["Low", "None"]:
+            categoriesValues[2].append(cRating)
+
+        # Class A (other types)
+        else:
+            categoriesValues[3].append(cRating)
+
+    return categoriesValues
+
 def vehicleRatingCalculus(values, categoriesValues, asil, cal, dp, iso, risk, cRating):
     """Calculates the vehicle 5-grade rating part A"""
 
