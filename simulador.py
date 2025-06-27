@@ -233,7 +233,7 @@ def vehicleRatingCalculus(values, categoriesValues, asil, cal, dp, iso, risk, cR
             values[3][1] += 1
             categoriesValues[3].append(cRating)
 
-    values[0][-1] = values[1][-1] = values[2][-1] = values[3][-1] = round(vehicleRatingWeightCalculus(values), 2)
+    values[0][-1] = values[1][-1] = values[2][-1] = values[3][-1] = round(vehicleRatingWeightCalculus(categoriesValues), 2)
 
     return values
 
@@ -244,6 +244,10 @@ def vehicleRatingWeightCalculus(categoriesValues):
     finalScore = 0
     adjusted_weights = []
     total_weight = 0
+    values = [[0,0],[0,0],[0,0],[0,0]]
+    for category in range(len(categoriesValues)):
+        values[category][0] = sum(categoriesValues[category])
+        values[category][1] = len(categoriesValues[category])
 
     # Adjust weights and calculate the total weight for non-missing values
     for i in range(len(values)):
