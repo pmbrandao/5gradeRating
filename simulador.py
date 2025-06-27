@@ -323,7 +323,7 @@ def write_to_file(data, categoriesValues, finalRating=0.0):
         
         print(f"Data written to {FILENAME}")
 
-
+# TODO: get values from file to runit more times
 def main():
     # Generate data for n components
     type = input("Choose the simulation type (auto or manual): ").strip()
@@ -333,6 +333,7 @@ def main():
         seedValue = random.randint(1, 10000)
     print(f"Using seed {seedValue}")
     random.seed(seedValue)
+    # TODO: save seed value in some structure
 
     # default values, can be set on manual
     minVuln = 0  # Min value allowed
