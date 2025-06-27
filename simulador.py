@@ -331,40 +331,21 @@ def main():
     # seedValue = random.randint(1, 10000)
     seedValue = float(input("Enter seed value to be set:"))
     random.seed(seedValue)
+    # default values, can be set on manual
     minVuln = 0  # Min value allowed
     maxVuln = 6.9  # Max value allowed is 6.9
     categoriesValues = [[], [], [], []]
+    nr_runs = 1
+    # ADAS, Powertrain, HMI, Body, Chassis
+    domainWeight = [0.20, 0.20, 0.20, 0.20, 0.20]
+    # QM, A, B, C, D
+    safetyWeight = [0.20, 0.20, 0.20, 0.20, 0.20]
+    numberECUs = 50
+    vulnProb = 0
 
     if type == "auto":
-        n = int(input("How many times would you like to repeat the simulation: "))
-        # ADAS, Powertrain, HMI, Body, Chassis
-        domainWeight = [0.20, 0.20, 0.20, 0.20, 0.20]
-        # QM, A, B, C, D
-        safetyWeight = [0.20, 0.20, 0.20, 0.20, 0.20]
-
-        numberECUs = 50  # random.randint(1, 30)
-        for _ in range(n):
-            categoriesValues = [[], [], [], []] # reset in every run
-            vulnProb = round(random.uniform(0, 1), 1)
-        
-            (finalData,categoriesValues,finalRating) = generate_simulation_data(
-                numberECUs,
-                vulnProb,
-                categoriesValues,
-                maxVuln,
-                minVuln,
-                domainWeight[0],
-                domainWeight[1],
-                domainWeight[2],
-                domainWeight[3],
-                domainWeight[4],
-                safetyWeight[0],
-                safetyWeight[1],
-                safetyWeight[2],
-                safetyWeight[3],
-                safetyWeight[4],
-            )
-            write_to_file(finalData, categoriesValues, finalRating)
+        nr_runs = int(input("How many times would you like to repeat the simulation: "))
+    
     elif type == "manual":
         numberECUs = int(input("How many ECU's do you wish to simulate (e.g values between 0 and 100): "))
         vulnProb = float(input("Enter the probability of generating components without vulnerabilities (e.g values between 0 and 1): "))
@@ -394,8 +375,14 @@ def main():
             # Type D
             float(input("Enter probability for generating components with safety level of D (e.g values between 0 and 1):")),
         ]
-       
-        data = generate_simulation_data(
+    else:
+        print("Wrong Data")
+    for _ in range(nr_runs):
+        categoriesValues = [[], [], [], []] # reset in every run
+        if type == "auto": # randomize for each run
+            vulnProb = round(random.uniform(0, 1), 1)
+    
+        (finalData,categoriesValues,finalRating) = generate_simulation_data(
             numberECUs,
             vulnProb,
             categoriesValues,
@@ -412,10 +399,7 @@ def main():
             safetyWeight[3],
             safetyWeight[4],
         )
-        write_to_file(data, categoriesValues)
-    else:
-        print("Wrong Data")
-
+        write_to_file(finalData, categoriesValues, finalRating)
 
 if __name__ == "__main__":
     # Declaration and track of all of the vehicle 5-grade rating values
