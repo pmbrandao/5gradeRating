@@ -3,6 +3,58 @@ import os
 import csv
 from statistics import stdev, mean
 
+## Global Variables
+# Write data to a CSV file
+FILENAME = "simulation.csv"
+
+
+COMPONENT_TYPES = ["ADAS", "Powertrain", "HMI", "Body", "Chassis"]
+"""The Type of components that can be used in the simulation"""
+
+SAFETY_LEVELS = ["QM", "A", "B", "C", "D"]
+""" Define the CAL levels that correspond to each safety level """
+
+CAL_MAPPING = {
+    SAFETY_LEVELS[0]: [1, 2],  # CAL levels 1, 2 for QM
+    SAFETY_LEVELS[1]: [1, 2, 3],  # CAL levels 1, 2, 3 for A
+    SAFETY_LEVELS[2]: [1, 2, 3],  # CAL levels 1, 2, 3 for B
+    SAFETY_LEVELS[3]: [2, 3, 4],  # CAL levels 2, 3, 4 for
+    SAFETY_LEVELS[4]: [2, 3, 4],  # CAL levels 2, 3, 4 for D
+}
+""" Define a mapping for interaction risk based on the selected component
+High risk     : Impacts autonomous driving decisions; User overrides safety features (e.g., disables lane assist); Affects braking & steering control.
+Moderate risk : Sensors impact collision detection; Driver control over powertrain settings; Could alter stability settings.
+Low risk      : Structural changes affecting safety.
+"""
+
+INTERACTION_RISK_MAP = {
+    COMPONENT_TYPES[0]: [
+        "High",
+        "High",
+        "Moderate",
+        "Low",
+    ],  # ADAS is more likely to have high interaction risk
+    COMPONENT_TYPES[1]: [
+        "High",
+        "Moderate",
+        "Low",
+        "None",
+    ],  # Powertrain has high/moderate risk
+    COMPONENT_TYPES[2]: [
+        "Moderate",
+        "Low",
+        "None",
+        "None",
+    ],  # HMI might have moderate to low risks
+    COMPONENT_TYPES[3]: ["Low", "Low", "None", "None"],  # Body has lower risk
+    COMPONENT_TYPES[4]: [
+        "Moderate",
+        "Low",
+        "None",
+        "None",
+    ],  # Chassis tends to have moderate or low risks
+}
+
 
 # Generates a list of rows with random data matching the simulation.
 def generate_simulation_data(
@@ -28,38 +80,17 @@ def generate_simulation_data(
 
     for _ in range(numberECUs):
         # Define component types with specific probabilities
-        component_types = ["ADAS", "Powertrain", "HMI", "Body", "Chassis"]
         component_probs = [adasWeight, powertWeight, hmiWeight, bodyWeight, chWeight]
-        selected_component = random.choices(component_types, weights=component_probs, k=1)[0]
+        selected_component = random.choices(COMPONENT_TYPES, weights=component_probs, k=1)[0]
 
         # Define the safety levels that depend on the CAL levels
-        safety_levels = ["QM", "A", "B", "C", "D"]
         safety_probs = [qmWeight, aWeight, bWeight, cWeight, dWeight]
-        selected_asil = random.choices(safety_levels, weights=safety_probs, k=1)[0]
+        selected_asil = random.choices(SAFETY_LEVELS, weights=safety_probs, k=1)[0]
         # Define the CAL levels that correspond to each safety level
-        cal_mapping = {
-            "QM": [1, 2],  # CAL levels 1, 2 for QM
-            "A": [1, 2, 3],  # CAL levels 1, 2, 3 for A
-            "B": [1, 2, 3],  # CAL levels 1, 2, 3 for B
-            "C": [2, 3, 4],  # CAL levels 2, 3, 4 for C
-            "D": [2, 3, 4],  # CAL levels 2, 3, 4 for D
-        }
-        selected_cal = random.choice(cal_mapping[selected_asil])
+        selected_cal = random.choice(CAL_MAPPING[selected_asil])
 
-        # Define a mapping for interaction risk based on the selected component
-        # High risk     : Impacts autonomous driving decisions; User overrides safety features (e.g., disables lane assist); Affects braking & steering control.
-        # Moderate risk : Sensors impact collision detection; Driver control over powertrain settings; Could alter stability settings.
-        # Low risk      : Structural changes affecting safety.
-        interaction_risk_map = {
-            "ADAS": ["High", "High", "Moderate", "Low"],  # ADAS is more likely to have high interaction risk
-            "Powertrain": ["High", "Moderate", "Low", "None"],  # Powertrain has high/moderate risk
-            "HMI": ["Moderate", "Low", "None", "None"],  # HMI might have moderate to low risks
-            "Body": ["Low", "Low", "None", "None"],  # Body has lower risk
-            "Chassis": ["Moderate", "Low", "None", "None"],  # Chassis tends to have moderate or low risks
-        }
-
-        # Randomly choose the interaction risk from the interaction_risk_map for the selected component
-        interaction_risk = random.choice(interaction_risk_map[selected_component])
+        # Randomly choose the interaction risk from the INTERACTION_RISK_MAP for the selected component
+        interaction_risk = random.choice(INTERACTION_RISK_MAP[selected_component])
 
         # Probability of generating (0,0,0) # 20% chance
         if random.random() < vulnProb:
@@ -207,10 +238,9 @@ def vehicleRatingWeightCalculus(values):
 # Write the generated simulation data to a CSV file.
 def write_to_file(data, categoriesValues):
     # Write data to a CSV file
-    filename = "simulation.csv"
-    file_exists = os.path.exists(filename)
+    file_exists = os.path.exists(FILENAME)
 
-    with open(filename, mode="a", newline="", encoding="utf-8") as file:
+    with open(FILENAME, mode="a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file, delimiter=",")
 
         if not file_exists:
@@ -305,7 +335,7 @@ def write_to_file(data, categoriesValues):
             ]
         )
         # writer.writerows(data)  # Write the data rows
-        print(f"Data written to {filename}")
+        print(f"Data written to {FILENAME}")
 
 
 def main():
