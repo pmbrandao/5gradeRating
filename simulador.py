@@ -74,20 +74,20 @@ def generate_simulation_data(
     dWeight,
 ):
     """Generates a list of rows with random data matching the simulation."""
-    
-    values = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
+   
     finalData = []
     vulnsWML = []
 
-    for _ in range(numberECUs):
-        # Define component types with specific probabilities
-        component_probs = [adasWeight, powertWeight, hmiWeight, bodyWeight, chWeight]
-        selected_component = random.choices(COMPONENT_TYPES, weights=component_probs, k=1)[0]
+    component_probs = [adasWeight, powertWeight, hmiWeight, bodyWeight, chWeight]
+    # Choose numberECUs components randomly with the given probabilities and replacement
+    list_selected_components = random.choices(COMPONENT_TYPES, weights=component_probs, k=numberECUs)
 
+    for selected_component in list_selected_components:
         # Define the safety levels that depend on the CAL levels
         safety_probs = [qmWeight, aWeight, bWeight, cWeight, dWeight]
         selected_asil = random.choices(SAFETY_LEVELS, weights=safety_probs, k=1)[0]
-        # Define the CAL levels that correspond to each safety level
+
+        # within the existing CAL choose a level randomly with equal probability
         selected_cal = random.choice(CAL_MAPPING[selected_asil])
 
         # Randomly choose the interaction risk from the INTERACTION_RISK_MAP for the selected component
@@ -136,8 +136,14 @@ def generate_simulation_data(
         # 4 = Isolated Entity,
         # 5     = interaction risk associated to each component
         # 9 = Component rating
-        data.append(vehicleRatingCalculus(values, categoriesValues, data[1], data[2], data[3], data[4], data[5], data[9]))
+        #data.append(vehicleRatingCalculus(values, categoriesValues, data[1], data[2], data[3], data[4], data[5], data[9]))
+        categoriesValues = addComponentToCategory(categoriesValues, data[1], data[2], data[3], data[4], data[5], data[9])
         finalData.append(data)
+    # after doing all the components calculate car rating
+    finalRating = vehicleRatingWeightCalculus(categoriesValues)
+
+    return (finalData,categoriesValues, finalRating)
+
 
 def checkVulnRange(val: float) -> float:
     """Validate and adjust input values to be within [0.1, 6.9]"""
@@ -270,7 +276,7 @@ def vehicleRatingWeightCalculus(categoriesValues):
 
 
 
-def write_to_file(data, categoriesValues):
+def write_to_file(data, categoriesValues, finalRating=0.0):
     """Write the generated simulation data to a CSV file."""
 
     file_exists = os.path.exists(FILENAME)
@@ -307,32 +313,18 @@ def write_to_file(data, categoriesValues):
             ]
             writer.writerow(header)  # Write the header row
 
-        # Write simulation label as a separator row
-        for row in data:
-            # Get the final rating of the simulation
-            for i in range(3):  # row[10][3] has 4 elements
-                if row[10][i][2] != 0:
-                    final_rating = row[10][i][2]
-                    break
-                else:
-                    final_rating = 0
-
-        # D data (avg, mean and stdev)
-        avg_D = sum(categoriesValues[0]) / len(categoriesValues[0]) if len(categoriesValues[0]) > 0 else 0
-        stdev_D = stdev(categoriesValues[0]) if len(categoriesValues[0]) > 1 else 0
-        mean_D = mean(categoriesValues[0]) if len(categoriesValues[0]) > 0 else 0
-        # C data (avg, mean and stdev)
-        avg_C = sum(categoriesValues[1]) / len(categoriesValues[1]) if len(categoriesValues[1]) > 0 else 0
-        stdev_C = stdev(categoriesValues[1]) if len(categoriesValues[1]) > 1 else 0
-        mean_C = mean(categoriesValues[1]) if len(categoriesValues[1]) > 0 else 0
-        # B data (avg, mean and stdev)
-        avg_B = sum(categoriesValues[2]) / len(categoriesValues[2]) if len(categoriesValues[2]) > 0 else 0
-        stdev_B = stdev(categoriesValues[2]) if len(categoriesValues[2]) > 1 else 0
-        mean_B = mean(categoriesValues[2]) if len(categoriesValues[2]) > 0 else 0
-        # A data (avg, mean and stdev)
-        avg_A = sum(categoriesValues[3]) / len(categoriesValues[3]) if len(categoriesValues[3]) > 0 else 0
-        stdev_A = stdev(categoriesValues[3]) if len(categoriesValues[3]) > 1 else 0
-        mean_A = mean(categoriesValues[3]) if len(categoriesValues[3]) > 0 else 0
+        num = [0,0,0,0]
+        avg = [0.0,0.0,0.0,0.0]
+        std = [0.0,0.0,0.0,0.0]
+        mea = [0.0,0.0,0.0,0.0]
+        summ = [0.0,0.0,0.0,0.0]
+        for i in  range(len(num)):
+            num[i] = len(categoriesValues[i])
+            if  num[i] > 0:
+                summ[i]= sum(categoriesValues[i])
+                avg[i] = summ[i] / num[i]
+                std[i] = stdev(categoriesValues[i]) if num[i]>1 else 0
+                mea[i] = mean(categoriesValues[i]) 
 
         writer.writerow(
             [
@@ -346,27 +338,30 @@ def write_to_file(data, categoriesValues):
                 # row[7],   # M
                 # row[8],   # L
                 # row[9],   # Component Rating
-                row[10][0][0],  # sum D
-                row[10][0][1],  # n Times D
-                avg_D,  # Avg D
-                mean_D,  # mean D
-                stdev_D,  # stdev D
-                row[10][1][0],  # sum C
-                row[10][1][1],  # n Times C
-                avg_C,  # Avg C
-                mean_C,  # mean C
-                stdev_C,  # stdev C
-                row[10][2][0],  # sum B
-                row[10][2][1],  # n Times B
-                avg_B,  # Avg B
-                mean_B,  # mean B
-                stdev_B,  # stdev B
-                row[10][3][0],  # sum A
-                row[10][3][1],  # n Times A
-                avg_A,  # Avg A
-                mean_A,  # mean A
-                stdev_A,  # stdev A
-                final_rating,
+                summ[0],  # sum D
+                num[0],  # n Times D
+                avg[0],  # Avg D
+                mea[0],  # mean D
+                std[0],  # stdev D
+
+                summ[1],  # sum C
+                num[1],  # n Times C
+                avg[1],  # Avg C
+                mea[1],  # mean C
+                std[1],  # stdev C
+
+                summ[2],  # sum B
+                num[2],  # n Times B
+                avg[2],  # Avg B
+                mea[2],  # mean B
+                std[2],  # stdev B
+
+                summ[3],  # sum A
+                num[3],  # n Times A
+                avg[3],  # Avg A
+                mea[3],  # mean A
+                std[3],  # stdev A
+                finalRating
             ]
         )
         # writer.writerows(data)  # Write the data rows
@@ -394,7 +389,8 @@ def main():
         for _ in range(n):
             categoriesValues = [[], [], [], []]
             vulnProb = round(random.uniform(0, 1), 1)
-
+        
+            (finalData,categoriesValues,finalRating) = generate_simulation_data(
                 numberECUs,
                 vulnProb,
                 categoriesValues,
@@ -411,7 +407,7 @@ def main():
                 safetyWeight[3],
                 safetyWeight[4],
             )
-            write_to_file(data, categoriesValues)
+            write_to_file(finalData, categoriesValues, finalRating)
     elif type == "manual":
         numberECUs = int(input("How many ECU's do you wish to simulate (e.g values between 0 and 100): "))
         vulnProb = float(input("Enter the probability of generating components without vulnerabilities (e.g values between 0 and 1): "))
@@ -459,7 +455,7 @@ def main():
             safetyWeight[3],
             safetyWeight[4],
         )
-        write_to_file(data)
+        write_to_file(data, categoriesValues)
     else:
         print("Wrong Data")
 
