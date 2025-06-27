@@ -372,21 +372,25 @@ def write_to_file(data, categoriesValues):
 def main():
     # Generate data for n components
     type = input("Choose the simulation type (auto or manual): ").strip()
+    # seedValue = random.randint(1, 10000)
+    seedValue = float(input("Enter seed value to be set:"))
+    random.seed(seedValue)
+    minVuln = 0  # Min value allowed
+    maxVuln = 6.9  # Max value allowed is 6.9
+    categoriesValues = [[], [], [], []]
 
     if type == "auto":
         n = int(input("How many times would you like to repeat the simulation: "))
+        # ADAS, Powertrain, HMI, Body, Chassis
+        domainWeight = [0.20, 0.20, 0.20, 0.20, 0.20]
+        # QM, A, B, C, D
+        safetyWeight = [0.20, 0.20, 0.20, 0.20, 0.20]
+
         numberECUs = 50  # random.randint(1, 30)
         for _ in range(n):
             categoriesValues = [[], [], [], []]
             vulnProb = round(random.uniform(0, 1), 1)
-            minVuln = 0  # Min value allowed
-            maxVuln = 6.9  # Max value allowed is 6.9
-            seedValue = random.randint(1, 10000)
-            # ADAS, Powertrain, HMI, Body, Chassis
-            domainWeight = [0.20, 0.20, 0.20, 0.20, 0.20]
-            # QM, A, B, C, D
-            safetyWeight = [0.20, 0.20, 0.20, 0.20, 0.20]
-            data = generate_simulation_data(
+
                 numberECUs,
                 vulnProb,
                 categoriesValues,
