@@ -210,39 +210,6 @@ def addComponentToCategory(categoriesValues, asil, cal, dp, iso, risk, cRating):
 
     return categoriesValues
 
-def vehicleRatingCalculus(values, categoriesValues, asil, cal, dp, iso, risk, cRating):
-    """Calculates the vehicle 5-grade rating part A"""
-
-    # Check if component rating is between 0 and 5
-    if cRating >= 0 and cRating <= 5:
-        # Class D
-        if (asil == "D" or asil == "C") or ((asil == "B" or asil == "A") and (cal == 4 or cal == 3) and risk == "High"):
-            values[0][0] += round(cRating, 2)
-            values[0][1] += 1
-            categoriesValues[0].append(cRating)
-
-        # Class C
-        elif ((asil == "B" or asil == "A") and cal == 2 and dp == "Yes") or risk in ["Moderate", "Low"]:
-            values[1][0] += round(cRating, 2)
-            values[1][1] += 1
-            categoriesValues[1].append(cRating)
-
-        # Class B
-        elif ((asil == "B" or asil == "A") and cal == 2 and dp == "No" and iso == "No") or risk in ["Low", "None"]:
-            values[2][0] += round(cRating, 2)
-            values[2][1] += 1
-            categoriesValues[2].append(cRating)
-
-        # Class A (other types)
-        else:
-            values[3][0] += round(cRating, 2)
-            values[3][1] += 1
-            categoriesValues[3].append(cRating)
-
-    values[0][-1] = values[1][-1] = values[2][-1] = values[3][-1] = round(vehicleRatingWeightCalculus(categoriesValues), 2)
-
-    return values
-
 def vehicleRatingWeightCalculus(categoriesValues):
     """ Calculates the vehicle 5-grade rating part B """
 
