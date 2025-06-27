@@ -344,7 +344,7 @@ def main():
 
         numberECUs = 50  # random.randint(1, 30)
         for _ in range(n):
-            categoriesValues = [[], [], [], []]
+            categoriesValues = [[], [], [], []] # reset in every run
             vulnProb = round(random.uniform(0, 1), 1)
         
             (finalData,categoriesValues,finalRating) = generate_simulation_data(
