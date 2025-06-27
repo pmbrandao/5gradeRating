@@ -1,7 +1,7 @@
 import random
 import os
 import csv
-from statistics import stdev, mean
+from statistics import stdev, median
 
 ## Global Variables
 # Write data to a CSV file
@@ -316,7 +316,7 @@ def write_to_file(data, categoriesValues, finalRating=0.0):
         num = [0,0,0,0]
         avg = [0.0,0.0,0.0,0.0]
         std = [0.0,0.0,0.0,0.0]
-        mea = [0.0,0.0,0.0,0.0]
+        med = [0.0,0.0,0.0,0.0]
         summ = [0.0,0.0,0.0,0.0]
         for i in  range(len(num)):
             num[i] = len(categoriesValues[i])
@@ -324,7 +324,7 @@ def write_to_file(data, categoriesValues, finalRating=0.0):
                 summ[i]= sum(categoriesValues[i])
                 avg[i] = summ[i] / num[i]
                 std[i] = stdev(categoriesValues[i]) if num[i]>1 else 0
-                mea[i] = mean(categoriesValues[i]) 
+                med[i] = median(categoriesValues[i]) 
 
         writer.writerow(
             [
@@ -341,25 +341,25 @@ def write_to_file(data, categoriesValues, finalRating=0.0):
                 summ[0],  # sum D
                 num[0],  # n Times D
                 avg[0],  # Avg D
-                mea[0],  # mean D
+                med[0],  # mean D
                 std[0],  # stdev D
 
                 summ[1],  # sum C
                 num[1],  # n Times C
                 avg[1],  # Avg C
-                mea[1],  # mean C
+                med[1],  # mean C
                 std[1],  # stdev C
 
                 summ[2],  # sum B
                 num[2],  # n Times B
                 avg[2],  # Avg B
-                mea[2],  # mean B
+                med[2],  # mean B
                 std[2],  # stdev B
 
                 summ[3],  # sum A
                 num[3],  # n Times A
                 avg[3],  # Avg A
-                mea[3],  # mean A
+                med[3],  # mean A
                 std[3],  # stdev A
                 finalRating
             ]
