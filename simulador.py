@@ -81,10 +81,10 @@ def generate_simulation_data(
     component_probs = [adasWeight, powertWeight, hmiWeight, bodyWeight, chWeight]
     # Choose numberECUs components randomly with the given probabilities and replacement
     list_selected_components = random.choices(COMPONENT_TYPES, weights=component_probs, k=numberECUs)
+    safety_probs = [qmWeight, aWeight, bWeight, cWeight, dWeight]
 
     for selected_component in list_selected_components:
         # Define the safety levels that depend on the CAL levels
-        safety_probs = [qmWeight, aWeight, bWeight, cWeight, dWeight]
         selected_asil = random.choices(SAFETY_LEVELS, weights=safety_probs, k=1)[0]
 
         # within the existing CAL choose a level randomly with equal probability
