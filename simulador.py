@@ -103,7 +103,7 @@ def generate_simulation_data(
             vulnsWML = [round(random.uniform(minVuln, maxVuln), 1) for _ in range(num_vulns)]
             # In case we do not have vulns just fill 0
             while len(vulnsWML) < 3:
-                {vulnsWML.append(0)}
+                vulnsWML.append(0)
 
             # Check if any value in the list is >= 5.3
             if max(vulnsWML) >= 5.3:
@@ -125,7 +125,7 @@ def generate_simulation_data(
             interaction_risk,
             vulnsWML[0],
             vulnsWML[1],
-            vulnsWML[2],
+            vulnsWML[2]
         ]
         # Component rating based (-0.725 * result) + 5 with one decimal
         data.append(round(componentRatingCalculus(vulnsWML[0], vulnsWML[1], vulnsWML[2]), 1))
@@ -134,7 +134,7 @@ def generate_simulation_data(
         # 2 = CAL Level,
         # 3 = Data Or Privacy,
         # 4 = Isolated Entity,
-        # 5 = interaction risk associated to each component
+        # 5     = interaction risk associated to each component
         # 9 = Component rating
         data.append(vehicleRatingCalculus(values, categoriesValues, data[1], data[2], data[3], data[4], data[5], data[9]))
         finalData.append(data)
@@ -433,6 +433,7 @@ def main():
             # Type D
             float(input("Enter probability for generating components with safety level of D (e.g values between 0 and 1):")),
         ]
+       
         data = generate_simulation_data(
             numberECUs,
             vulnProb,
