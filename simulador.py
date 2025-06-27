@@ -56,7 +56,6 @@ INTERACTION_RISK_MAP = {
 }
 
 
-# Generates a list of rows with random data matching the simulation.
 def generate_simulation_data(
     numberECUs,
     vulnProb,
@@ -74,6 +73,8 @@ def generate_simulation_data(
     cWeight,
     dWeight,
 ):
+    """Generates a list of rows with random data matching the simulation."""
+    
     values = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
     finalData = []
     vulnsWML = []
@@ -92,7 +93,7 @@ def generate_simulation_data(
         # Randomly choose the interaction risk from the INTERACTION_RISK_MAP for the selected component
         interaction_risk = random.choice(INTERACTION_RISK_MAP[selected_component])
 
-        # Probability of generating (0,0,0) # 20% chance
+        # Probability of generating (0,0,0)
         if random.random() < vulnProb:
             vulnsWML = [0, 0, 0]
         else:
@@ -137,12 +138,8 @@ def generate_simulation_data(
         # 9 = Component rating
         data.append(vehicleRatingCalculus(values, categoriesValues, data[1], data[2], data[3], data[4], data[5], data[9]))
         finalData.append(data)
-
-    return finalData
-
-
-# Calculates the component 5-grade rating based on the input values.
-def componentRatingCalculus(valW, valM, valL):
+def componentRatingCalculus(valW: float, valM: float, valL: float) -> float:
+    """Calculates the component 5-grade rating based on the input values."""
     # Validate and adjust input values to be within [0.1, 6.9]
     if valW < 0.0 or valW > 6.9:
         valW = 0
@@ -177,6 +174,8 @@ def componentRatingCalculus(valW, valM, valL):
 
 # Calculates the vehicle 5-grade rating part A
 def vehicleRatingCalculus(values, categoriesValues, asil, cal, dp, iso, risk, cRating):
+    """Calculates the vehicle 5-grade rating part A"""
+
     # Check if component rating is between 0 and 5
     if cRating >= 0 and cRating <= 5:
         # Class D
@@ -207,9 +206,9 @@ def vehicleRatingCalculus(values, categoriesValues, asil, cal, dp, iso, risk, cR
 
     return values
 
+def vehicleRatingWeightCalculus(categoriesValues):
+    """ Calculates the vehicle 5-grade rating part B """
 
-# Calculates the vehicle 5-grade rating part B
-def vehicleRatingWeightCalculus(values):
     weights = [0.5, 0.3, 0.15, 0.05]
     finalScore = 0
     adjusted_weights = []
@@ -235,9 +234,10 @@ def vehicleRatingWeightCalculus(values):
     return finalScore
 
 
-# Write the generated simulation data to a CSV file.
+
 def write_to_file(data, categoriesValues):
-    # Write data to a CSV file
+    """Write the generated simulation data to a CSV file."""
+
     file_exists = os.path.exists(FILENAME)
 
     with open(FILENAME, mode="a", newline="", encoding="utf-8") as file:
