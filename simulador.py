@@ -138,15 +138,25 @@ def generate_simulation_data(
         # 9 = Component rating
         data.append(vehicleRatingCalculus(values, categoriesValues, data[1], data[2], data[3], data[4], data[5], data[9]))
         finalData.append(data)
+
+def checkVulnRange(val: float) -> float:
+    """Validate and adjust input values to be within [0.1, 6.9]"""
+
+    if val < 0.0:
+        return 0
+    elif val > 6.9:
+        return 6.9
+    else:
+        return val
+
+
 def componentRatingCalculus(valW: float, valM: float, valL: float) -> float:
     """Calculates the component 5-grade rating based on the input values."""
+
     # Validate and adjust input values to be within [0.1, 6.9]
-    if valW < 0.0 or valW > 6.9:
-        valW = 0
-    if valM < 0.0 or valM > 6.9:
-        valM = 0
-    if valL < 0.0 or valL > 6.9:
-        valL = 0
+    valW = checkVulnRange(valW)
+    valM = checkVulnRange(valM)
+    valL = checkVulnRange(valL)
 
     # Count valid inputs
     valid_values = [val for val in [valW, valM, valL] if val > 0]
