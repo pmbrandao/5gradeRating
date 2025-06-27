@@ -328,9 +328,13 @@ def write_to_file(data, categoriesValues, finalRating=0.0):
 def main():
     # Generate data for n components
     type = input("Choose the simulation type (auto or manual): ").strip()
-    # seedValue = random.randint(1, 10000)
-    seedValue = float(input("Enter seed value to be set:"))
+    seedValue = float(input("Enter seed value to be set (0 to randomize seed):"))
+
+    if seedValue ==0:
+        seedValue = random.randint(1, 10000)
+    print(f"Using seed {seedValue}")
     random.seed(seedValue)
+
     # default values, can be set on manual
     minVuln = 0  # Min value allowed
     maxVuln = 6.9  # Max value allowed is 6.9
