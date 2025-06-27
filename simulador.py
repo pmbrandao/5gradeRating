@@ -253,7 +253,7 @@ def write_to_file(data, categoriesValues, finalRating=0.0):
 
         if not file_exists:
             # Define header for the CSV file
-            header = [
+            writer.writerow([
                 # "Component Type", "ASIL Level", "CAL Level", "Data/Privacy",
                 # "Isolated Entity", "Interation Risk", "W", "M", "L", "Component Rating",
                 "sum_D",
@@ -277,8 +277,7 @@ def write_to_file(data, categoriesValues, finalRating=0.0):
                 "mean_A",
                 "std_A",
                 "Final Rating",
-            ]
-            writer.writerow(header)  # Write the header row
+            ]) # Write the header row
 
         num = [0,0,0,0]
         avg = [0.0,0.0,0.0,0.0]
