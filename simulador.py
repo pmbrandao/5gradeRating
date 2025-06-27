@@ -295,16 +295,6 @@ def write_to_file(data, categoriesValues, finalRating=0.0):
 
         writer.writerow(
             [
-                # row[0],   # Component Type
-                # row[1],   # ASIL Level
-                # row[2],   # CAL Level
-                # row[3],   # Data/Privacy
-                # row[4],   # Isolated Entity
-                # row[5],   # interation Risk
-                # row[6],   # W
-                # row[7],   # M
-                # row[8],   # L
-                # row[9],   # Component Rating
                 summ[0],  # sum D
                 num[0],  # n Times D
                 avg[0],  # Avg D
@@ -331,7 +321,7 @@ def write_to_file(data, categoriesValues, finalRating=0.0):
                 finalRating
             ]
         )
-        # writer.writerows(data)  # Write the data rows
+        
         print(f"Data written to {FILENAME}")
 
 
