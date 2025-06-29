@@ -78,7 +78,7 @@ def generate_simulation_data(
     dWeight,
 ):
     """Generates a list of rows with random data matching the simulation."""
-   
+
     finalData = []
     vulnsWML = []
 
@@ -129,7 +129,7 @@ def generate_simulation_data(
             interaction_risk,
             vulnsWML[0],
             vulnsWML[1],
-            vulnsWML[2]
+            vulnsWML[2],
         ]
         # Component rating based (-0.725 * result) + 5 with one decimal
         data.append(round(componentRatingCalculus(vulnsWML[0], vulnsWML[1], vulnsWML[2]), 1))
@@ -140,13 +140,13 @@ def generate_simulation_data(
         # 4 = Isolated Entity,
         # 5     = interaction risk associated to each component
         # 9 = Component rating
-        #data.append(vehicleRatingCalculus(values, categoriesValues, data[1], data[2], data[3], data[4], data[5], data[9]))
+        # data.append(vehicleRatingCalculus(values, categoriesValues, data[1], data[2], data[3], data[4], data[5], data[9]))
         categoriesValues = addComponentToCategory(categoriesValues, data[1], data[2], data[3], data[4], data[5], data[9])
         finalData.append(data)
     # after doing all the components calculate car rating
     finalRating = vehicleRatingWeightCalculus(categoriesValues)
 
-    return (finalData,categoriesValues, finalRating)
+    return (finalData, categoriesValues, finalRating)
 
 
 def checkVulnRange(val: float) -> float:
@@ -191,6 +191,7 @@ def componentRatingCalculus(valW: float, valM: float, valL: float) -> float:
 
     return componentRatingfinal_grade
 
+
 def addComponentToCategory(categoriesValues, asil, cal, dp, iso, risk, cRating):
     """Adds the current component to the correct category"""
 
@@ -214,14 +215,15 @@ def addComponentToCategory(categoriesValues, asil, cal, dp, iso, risk, cRating):
 
     return categoriesValues
 
+
 def vehicleRatingWeightCalculus(categoriesValues):
-    """ Calculates the vehicle 5-grade rating part B """
+    """Calculates the vehicle 5-grade rating part B"""
 
     weights = [0.5, 0.3, 0.15, 0.05]
     finalScore = 0
     adjusted_weights = []
     total_weight = 0
-    values = [[0,0],[0,0],[0,0],[0,0]]
+    values = [[0, 0], [0, 0], [0, 0], [0, 0]]
     for category in range(len(categoriesValues)):
         values[category][0] = sum(categoriesValues[category])
         values[category][1] = len(categoriesValues[category])
@@ -250,7 +252,7 @@ def write_to_file_raw(data, seedValue, runNr, totalRuns, format="pickle"):
     """Write the raw data to a file, including seedValue, run number and total number of runs to do"""
 
     # each object has all the information
-    objToWrite = [[seedValue,runNr,totalRuns], data]
+    objToWrite = [[seedValue, runNr, totalRuns], data]
 
     if format == "pickle":
         with open(FILENAME_RAW, "ab") as file_raw:
@@ -259,19 +261,19 @@ def write_to_file_raw(data, seedValue, runNr, totalRuns, format="pickle"):
     elif format == "json":
         with open(FILENAME_RAW, mode="a", newline="", encoding="utf-8") as file_raw:
             # each line is a valid json object. The file itself will not be
-            jsonObjStr = json.dumps(objToWrite,separators=(',',':'))            
+            jsonObjStr = json.dumps(objToWrite, separators=(",", ":"))
             print(jsonObjStr, file=file_raw)
-            
-    else: # any other format is bare
+
+    else:  # any other format is bare
         with open(FILENAME_RAW, mode="a", newline="", encoding="utf-8") as file_raw:
             print(objToWrite, file=file_raw)
 
 
-def write_to_file(data, categoriesValues, finalRating=0.0, seedValue = 0, runNr = 0, totalRuns = 0):
+def write_to_file(data, categoriesValues, finalRating=0.0, seedValue=0, runNr=0, totalRuns=0):
     """Write the generated simulation data to a CSV file."""
 
     # write the raw data to a file
-    write_to_file_raw(data,seedValue,runNr, totalRuns)
+    write_to_file_raw(data, seedValue, runNr, totalRuns)
 
     file_exists = os.path.exists(FILENAME_RESULTS)
 
@@ -280,47 +282,49 @@ def write_to_file(data, categoriesValues, finalRating=0.0, seedValue = 0, runNr 
 
         if not file_exists:
             # Define header for the CSV file
-            writer.writerow([
-                # "Component Type", "ASIL Level", "CAL Level", "Data/Privacy",
-                # "Isolated Entity", "Interation Risk", "W", "M", "L", "Component Rating",
-                "sum_D",
-                "n_Times_D",
-                "Avg_D",
-                "mean_D",
-                "std_D",
-                "sum_C",
-                "n_Times_C",
-                "Avg_C",
-                "mean_C",
-                "std_C",
-                "sum_B",
-                "n_Times_B",
-                "Avg_B",
-                "mean_B",
-                "std_B",
-                "sum_A",
-                "n_Times_A",
-                "Avg_A",
-                "mean_A",
-                "std_A",
-                "Final Rating",
-                "Seed Value",
-                "Run Nr",
-                "Total nr of Runs",
-            ]) # Write the header row
+            writer.writerow(
+                [
+                    # "Component Type", "ASIL Level", "CAL Level", "Data/Privacy",
+                    # "Isolated Entity", "Interation Risk", "W", "M", "L", "Component Rating",
+                    "sum_D",
+                    "n_Times_D",
+                    "Avg_D",
+                    "mean_D",
+                    "std_D",
+                    "sum_C",
+                    "n_Times_C",
+                    "Avg_C",
+                    "mean_C",
+                    "std_C",
+                    "sum_B",
+                    "n_Times_B",
+                    "Avg_B",
+                    "mean_B",
+                    "std_B",
+                    "sum_A",
+                    "n_Times_A",
+                    "Avg_A",
+                    "mean_A",
+                    "std_A",
+                    "Final Rating",
+                    "Seed Value",
+                    "Run Nr",
+                    "Total nr of Runs",
+                ]
+            )  # Write the header row
 
-        num = [0,0,0,0]
-        avg = [0.0,0.0,0.0,0.0]
-        std = [0.0,0.0,0.0,0.0]
-        med = [0.0,0.0,0.0,0.0]
-        summ = [0.0,0.0,0.0,0.0]
-        for i in  range(len(num)):
+        num = [0, 0, 0, 0]
+        avg = [0.0, 0.0, 0.0, 0.0]
+        std = [0.0, 0.0, 0.0, 0.0]
+        med = [0.0, 0.0, 0.0, 0.0]
+        summ = [0.0, 0.0, 0.0, 0.0]
+        for i in range(len(num)):
             num[i] = len(categoriesValues[i])
-            if  num[i] > 0:
-                summ[i]= sum(categoriesValues[i])
+            if num[i] > 0:
+                summ[i] = sum(categoriesValues[i])
                 avg[i] = summ[i] / num[i]
-                std[i] = stdev(categoriesValues[i]) if num[i]>1 else 0
-                med[i] = median(categoriesValues[i]) 
+                std[i] = stdev(categoriesValues[i]) if num[i] > 1 else 0
+                med[i] = median(categoriesValues[i])
 
         writer.writerow(
             [
@@ -329,19 +333,16 @@ def write_to_file(data, categoriesValues, finalRating=0.0, seedValue = 0, runNr 
                 avg[0],  # Avg D
                 med[0],  # mean D
                 std[0],  # stdev D
-
                 summ[1],  # sum C
                 num[1],  # n Times C
                 avg[1],  # Avg C
                 med[1],  # mean C
                 std[1],  # stdev C
-
                 summ[2],  # sum B
                 num[2],  # n Times B
                 avg[2],  # Avg B
                 med[2],  # mean B
                 std[2],  # stdev B
-
                 summ[3],  # sum A
                 num[3],  # n Times A
                 avg[3],  # Avg A
@@ -350,27 +351,28 @@ def write_to_file(data, categoriesValues, finalRating=0.0, seedValue = 0, runNr 
                 finalRating,
                 seedValue,
                 runNr,
-                totalRuns
+                totalRuns,
             ]
         )
-        
+
         print(f"Data written to {FILENAME_RESULTS}")
+
 
 # TODO: get values from file to runit more times
 def main():
     # Use argparse as described in
     # https://docs.python.org/3/howto/argparse.html#argparse-tutorial
     parser = argparse.ArgumentParser()
-    parser.add_argument("-t","--type",help="the simulation type (auto or manual)", choices=["auto", "manual"])
-    parser.add_argument("-n","--runs",help="the number of times to run the simulation; greater than 0", type=int)
-    parser.add_argument("-s","--seed",help="the seed value to be set (0 to randomize seed)", type=int)
+    parser.add_argument("-t", "--type", help="the simulation type (auto or manual)", choices=["auto", "manual"])
+    parser.add_argument("-n", "--runs", help="the number of times to run the simulation; greater than 0", type=int)
+    parser.add_argument("-s", "--seed", help="the seed value to be set (0 to randomize seed)", type=int)
     args = parser.parse_args()
 
     type = args.type
     if not type:
         type = input("Choose the simulation type (auto or manual): ").strip()
     seedValue = args.seed
-    if seedValue is None: # can be 0, which is false
+    if seedValue is None:  # can be 0, which is false
         seedValue = int(input("Enter seed value to be set (0 to randomize seed):"))
 
     if seedValue == 0:
@@ -392,9 +394,9 @@ def main():
 
     if type == "auto":
         nr_runs = args.runs
-        if not nr_runs: # cannot be zero
+        if not nr_runs:  # cannot be zero
             nr_runs = int(input("How many times would you like to repeat the simulation: "))
-    
+
     elif type == "manual":
         numberECUs = int(input("How many ECU's do you wish to simulate (e.g values between 0 and 100): "))
         vulnProb = float(input("Enter the probability of generating components without vulnerabilities (e.g values between 0 and 1): "))
@@ -427,11 +429,11 @@ def main():
     else:
         print("Wrong Data")
     for nRun in range(nr_runs):
-        categoriesValues = [[], [], [], []] # reset in every run
-        if type == "auto": # randomize for each run
+        categoriesValues = [[], [], [], []]  # reset in every run
+        if type == "auto":  # randomize for each run
             vulnProb = round(random.uniform(0, 1), 1)
-    
-        (finalData,categoriesValues,finalRating) = generate_simulation_data(
+
+        (finalData, categoriesValues, finalRating) = generate_simulation_data(
             numberECUs,
             vulnProb,
             categoriesValues,
@@ -448,7 +450,8 @@ def main():
             safetyWeight[3],
             safetyWeight[4],
         )
-        write_to_file(finalData, categoriesValues, finalRating, seedValue, nRun+1, nr_runs)
+        write_to_file(finalData, categoriesValues, finalRating, seedValue, nRun + 1, nr_runs)
+
 
 if __name__ == "__main__":
     # Declaration and track of all of the vehicle 5-grade rating values
