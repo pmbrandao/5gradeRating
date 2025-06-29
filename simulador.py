@@ -1,3 +1,4 @@
+import argparse
 import random
 import os
 import csv
@@ -325,11 +326,22 @@ def write_to_file(data, categoriesValues, finalRating=0.0):
 
 # TODO: get values from file to runit more times
 def main():
-    # Generate data for n components
-    type = input("Choose the simulation type (auto or manual): ").strip()
-    seedValue = float(input("Enter seed value to be set (0 to randomize seed):"))
+    # Use argparse as described in
+    # https://docs.python.org/3/howto/argparse.html#argparse-tutorial
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t","--type",help="the simulation type (auto or manual)", choices=["auto", "manual"])
+    parser.add_argument("-n","--runs",help="the number of times to run the simulation; greater than 0", type=int)
+    parser.add_argument("-s","--seed",help="the seed value to be set (0 to randomize seed)", type=int)
+    args = parser.parse_args()
 
-    if seedValue ==0:
+    type = args.type
+    if not type:
+        type = input("Choose the simulation type (auto or manual): ").strip()
+    seedValue = args.seed
+    if seedValue is None: # can be 0, which is false
+        seedValue = float(input("Enter seed value to be set (0 to randomize seed):"))
+
+    if seedValue == 0:
         seedValue = random.randint(1, 10000)
     print(f"Using seed {seedValue}")
     random.seed(seedValue)
@@ -348,7 +360,9 @@ def main():
     vulnProb = 0
 
     if type == "auto":
-        nr_runs = int(input("How many times would you like to repeat the simulation: "))
+        nr_runs = args.runs
+        if not nr_runs: # cannot be zero
+            nr_runs = int(input("How many times would you like to repeat the simulation: "))
     
     elif type == "manual":
         numberECUs = int(input("How many ECU's do you wish to simulate (e.g values between 0 and 100): "))
