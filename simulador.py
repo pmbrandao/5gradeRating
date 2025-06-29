@@ -6,7 +6,8 @@ from statistics import stdev, median
 
 ## Global Variables
 # Write data to a CSV file
-FILENAME = "simulation.csv"
+FILENAME_RESULTS = "simulation.csv"
+FILENAME_RAW = "data.txt"
 
 
 COMPONENT_TYPES = ["ADAS", "Powertrain", "HMI", "Body", "Chassis"]
@@ -243,13 +244,24 @@ def vehicleRatingWeightCalculus(categoriesValues):
     return finalScore
 
 
+def write_to_file_raw(data, seedValue, runNr, totalRuns):
+    """Write the raw data to a file, including seedValue, run number and totoal number of runs to do"""
+
+    with open(FILENAME_RAW, mode="a", newline="", encoding="utf-8") as file_raw:
+        print(f"seed={seedValue},run={runNr}/{totalRuns}", file=file_raw)
+        print(data, file=file_raw)
+
+
 
 def write_to_file(data, categoriesValues, finalRating=0.0, seedValue = 0, runNr = 0, totalRuns = 0):
     """Write the generated simulation data to a CSV file."""
 
-    file_exists = os.path.exists(FILENAME)
+    # write the raw data to a file
+    write_to_file_raw(data,seedValue,runNr, totalRuns)
 
-    with open(FILENAME, mode="a", newline="", encoding="utf-8") as file:
+    file_exists = os.path.exists(FILENAME_RESULTS)
+
+    with open(FILENAME_RESULTS, mode="a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file, delimiter=",")
 
         if not file_exists:
@@ -328,7 +340,7 @@ def write_to_file(data, categoriesValues, finalRating=0.0, seedValue = 0, runNr 
             ]
         )
         
-        print(f"Data written to {FILENAME}")
+        print(f"Data written to {FILENAME_RESULTS}")
 
 # TODO: get values from file to runit more times
 def main():
