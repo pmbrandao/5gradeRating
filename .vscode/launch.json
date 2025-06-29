@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": "${command:pickArgs}" //-s 123 -n 10 -t auto
+            //"args": "${command:pickArgs}" //-s 123 -n 10 -t auto
+            "args": "-s 123 -n 10 -t auto\n"
         }
     ]
 }
