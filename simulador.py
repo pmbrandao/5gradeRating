@@ -244,7 +244,7 @@ def vehicleRatingWeightCalculus(categoriesValues):
 
 
 
-def write_to_file(data, categoriesValues, finalRating=0.0):
+def write_to_file(data, categoriesValues, finalRating=0.0, seedValue = 0, runNr = 0, totalRuns = 0):
     """Write the generated simulation data to a CSV file."""
 
     file_exists = os.path.exists(FILENAME)
@@ -278,6 +278,9 @@ def write_to_file(data, categoriesValues, finalRating=0.0):
                 "mean_A",
                 "std_A",
                 "Final Rating",
+                "Seed Value",
+                "Run Nr",
+                "Total nr of Runs",
             ]) # Write the header row
 
         num = [0,0,0,0]
@@ -318,7 +321,10 @@ def write_to_file(data, categoriesValues, finalRating=0.0):
                 avg[3],  # Avg A
                 med[3],  # mean A
                 std[3],  # stdev A
-                finalRating
+                finalRating,
+                seedValue,
+                runNr,
+                totalRuns
             ]
         )
         
@@ -339,13 +345,12 @@ def main():
         type = input("Choose the simulation type (auto or manual): ").strip()
     seedValue = args.seed
     if seedValue is None: # can be 0, which is false
-        seedValue = float(input("Enter seed value to be set (0 to randomize seed):"))
+        seedValue = int(input("Enter seed value to be set (0 to randomize seed):"))
 
     if seedValue == 0:
         seedValue = random.randint(1, 10000)
     print(f"Using seed {seedValue}")
     random.seed(seedValue)
-    # TODO: save seed value in some structure
 
     # default values, can be set on manual
     minVuln = 0  # Min value allowed
@@ -395,7 +400,7 @@ def main():
         ]
     else:
         print("Wrong Data")
-    for _ in range(nr_runs):
+    for nRun in range(nr_runs):
         categoriesValues = [[], [], [], []] # reset in every run
         if type == "auto": # randomize for each run
             vulnProb = round(random.uniform(0, 1), 1)
@@ -417,7 +422,7 @@ def main():
             safetyWeight[3],
             safetyWeight[4],
         )
-        write_to_file(finalData, categoriesValues, finalRating)
+        write_to_file(finalData, categoriesValues, finalRating, seedValue, nRun+1, nr_runs)
 
 if __name__ == "__main__":
     # Declaration and track of all of the vehicle 5-grade rating values
