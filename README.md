@@ -42,24 +42,84 @@ python simulator.py
 ### 🔧 Configuration Parameters
 Before running the simulation, you can configure the following parameters:
 
+## ECU Configuration
+
+| Variable       | Description |
+|----------------|-------------|
+| `numberECUs`   | Number of ECUs (Electronic Control Units) per vehicle. |
+| `vulnProb`     | Probability of a vulnerability occurring in a component. |
+| `maxVuln`      | Maximum value for vulnerabilities per component. |
+| `minVuln`      | Minimum value for vulnerabilities per component. |
+
+---
+
+## Component Domain Weights
+
+| Component      | Variable        | Description |
+|----------------|------------------|-------------|
+| ADAS           | `adasWeight`     | Advanced Driver Assistance Systems. |
+| Powertrain     | `powertWeight`   | Engine, transmission, and related systems. |
+| HMI            | `hmiWeight`      | Infotainment, driver controls, and related systems. |
+| Body           | `bodyWeight`     | Doors, climate control, lighting, and related systems. |
+| Chassis        | `chWeight`       | Suspension, steering, braking, and related systems. |
+
+---
+
+## Safety Levels (ASIL) Weights
+
+| ASIL Level | Variable     | Description |
+|------------|--------------|-------------|
+| QM         | `qmWeight`   | Quality Management – no specific safety requirement. |
+| A          | `aWeight`    | Minor safety implication. |
+| B          | `bWeight`    | Moderate safety implication. |
+| C          | `cWeight`    | High safety requirement. |
+| D          | `dWeight`    | Highest safety integrity requirement. |
+
+## CAL Mapping (Cybersecurity Assurance Level)
+
+Mapping of ASIL levels to allowable CAL levels (Safety is prioritized in the research):
+
+| ASIL Level | Allowed CAL Levels |
+|------------|---------------------|
+| QM         | 1, 2                |
+| A          | 1, 2, 3             |
+| B          | 1, 2, 3             |
+| C          | 2, 3, 4             |
+| D          | 2, 3, 4             |
+
+---
+
+## Interaction Risk Map
+
+Represents the potential impact of the interaction between components.
+
+| Component    | Risk Levels (descending order)             | Notes |
+|--------------|---------------------------------------------|-------|
+| ADAS         | `High`, `High`, `Moderate`, `Low`          | Affects autonomous control, braking, steering. |
+| Powertrain   | `High`, `Moderate`, `Low`, `None`          | Affects performance and stability systems. |
+| HMI          | `Moderate`, `Low`, `None`, `None`          | Affects driver inputs and interfaces. |
+| Body         | `Low`, `Low`, `None`, `None`               | Minor impact on safety. |
+| Chassis      | `Moderate`, `Low`, `None`, `None`          | Impacts steering, suspension systems. |
+
+## Example Component Selection Logic (Python Snippet)
+
 ```python
-numberECUs        # Number of ECUs (Electronic Control Units) per vehicle
-vulnProb          # Probability of a vulnerability occurring in a component
-categoriesValues  # Importance weights for each category
-maxVuln           # Maximum value for vulnerabilities per component
-minVuln           # Minimum value for vulnerabilities per component
+component_types = ["ADAS", "Powertrain", "HMI", "Body", "Chassis"]
+component_probs = [adasWeight, powertWeight, hmiWeight, bodyWeight, chWeight]
+selected_component = random.choices(component_types, weights=component_probs, k=1)[0]
 
-adasWeight        # ADAS system weight chance
-powertWeight      # Powertrain weight chance 
-hmiWeight         # Human-Machine Interface weight chance
-bodyWeight        # Body Electronics weight chance
-chWeight          # Chassis weight chance
-qmWeight          # Quality Management weight chance
+safety_levels = ["QM", "A", "B", "C", "D"]
+safety_probs = [qmWeight, aWeight, bWeight, cWeight, dWeight]
+selected_asil = random.choices(safety_levels, weights=safety_probs, k=1)[0]
 
-aWeight           # Safety level ASIL A weight chance
-bWeight           # Safety level ASIL B weight chance
-cWeight           # Safety level ASIL C weight chance
-dWeight           # Safety level ASIL D weight chance
+cal_mapping = {
+    "QM": [1, 2],
+    "A": [1, 2, 3],
+    "B": [1, 2, 3],
+    "C": [2, 3, 4],
+    "D": [2, 3, 4],
+}
+selected_cal = random.choice(cal_mapping[selected_asil])
 ```
 
 ### ▶️ Running the Simulator
