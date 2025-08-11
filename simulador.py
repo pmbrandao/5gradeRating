@@ -59,7 +59,6 @@ INTERACTION_RISK_MAP = {
     ],  # Chassis tends to have moderate or low risks
 }
 
-
 def generate_simulation_data(
     numberECUs,
     vulnProb,
@@ -98,7 +97,7 @@ def generate_simulation_data(
         interaction_risk = random.choice(INTERACTION_RISK_MAP[selected_component])
 
         # Probability of generating (0,0,0)
-        if random.random() < vulnProb:
+        if random.random() < vulnProb or vulnProb == 0:
             vulnsWML = [0, 0, 0]
         else:
             # Decide how many vulnerabilities to generate (1, 2, or 3)
@@ -357,7 +356,6 @@ def write_to_file(data, categoriesValues, finalRating=0.0, seedValue=0, runNr=0,
 
         print(f"Data written to {FILENAME_RESULTS}")
 
-
 # TODO: get values from file to runit more times
 def main():
     # Use argparse as described in
@@ -380,7 +378,9 @@ def main():
     print(f"Using seed {seedValue}")
     random.seed(seedValue)
 
-    # default values, can be set on manual
+    #Default values
+    numberECUs = 25
+    vulnProb = 0.5 
     minVuln = 0  # Min value allowed
     maxVuln = 6.9  # Max value allowed is 6.9
     categoriesValues = [[], [], [], []]
@@ -389,15 +389,37 @@ def main():
     domainWeight = [0.20, 0.20, 0.20, 0.20, 0.20]
     # QM, A, B, C, D
     safetyWeight = [0.20, 0.20, 0.20, 0.20, 0.20]
-    numberECUs = 50
-    vulnProb = 0
-
+    
     if type == "auto":
         nr_runs = args.runs
         if not nr_runs:  # cannot be zero
             nr_runs = int(input("How many times would you like to repeat the simulation: "))
 
+        numberECUs = random.randint(0, 100)
+        vulnProb = round(random.uniform(0, 1), 1)
+        maxVuln = round(random.uniform(0, 6.9), 1)
+        seedValue = random.randint(0, 1000)
+
+        domainWeight = [
+            round(random.uniform(0, 1), 1),  # Type ADAS
+            round(random.uniform(0, 1), 1),  # Type PowerTrain
+            round(random.uniform(0, 1), 1),  # Type HMI
+            round(random.uniform(0, 1), 1),  # Type Body
+            round(random.uniform(0, 1), 1),  # Type Chassi
+        ]
+
+        safetyWeight = [
+        round(random.uniform(0, 1), 1),  # Type QM
+        round(random.uniform(0, 1), 1),  # Type A
+        round(random.uniform(0, 1), 1),  # Type B
+        round(random.uniform(0, 1), 1),  # Type C
+        round(random.uniform(0, 1), 1),  # Type D
+        ]
     elif type == "manual":
+        nr_runs = args.runs
+        if not nr_runs:  # cannot be zero
+            nr_runs = int(input("How many times would you like to repeat the simulation: "))
+        
         numberECUs = int(input("How many ECU's do you wish to simulate (e.g values between 0 and 100): "))
         vulnProb = float(input("Enter the probability of generating components without vulnerabilities (e.g values between 0 and 1): "))
         maxVuln = float(input("Enter the probability of generating components without vulnerabilities (e.g values between 0 and 6.9): "))
@@ -406,13 +428,13 @@ def main():
             # Type ADAS
             float(input("Enter probability for generating components type ADAS (e.g values between 0 and 1):")),
             # Type PowerTrain
-            float(input("Enter probability for generating components type ADAS (e.g values between 0 and 1):")),
+            float(input("Enter probability for generating components type PowerTrain (e.g values between 0 and 1):")),
             # Type HMI
-            float(input("Enter probability for generating components type ADAS (e.g values between 0 and 1):")),
+            float(input("Enter probability for generating components type HMI (e.g values between 0 and 1):")),
             # Type Body
-            float(input("Enter probability for generating components type ADAS (e.g values between 0 and 1):")),
+            float(input("Enter probability for generating components type Body (e.g values between 0 and 1):")),
             # Type Chassi
-            float(input("Enter probability for generating components type ADAS (e.g values between 0 and 1):")),
+            float(input("Enter probability for generating components type Chassi (e.g values between 0 and 1):")),
         ]
         safetyWeight = [
             # Type QM
@@ -428,6 +450,7 @@ def main():
         ]
     else:
         print("Wrong Data")
+    
     for nRun in range(nr_runs):
         categoriesValues = [[], [], [], []]  # reset in every run
         if type == "auto":  # randomize for each run
@@ -451,7 +474,6 @@ def main():
             safetyWeight[4],
         )
         write_to_file(finalData, categoriesValues, finalRating, seedValue, nRun + 1, nr_runs)
-
 
 if __name__ == "__main__":
     # Declaration and track of all of the vehicle 5-grade rating values
