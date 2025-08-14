@@ -97,8 +97,9 @@ def generate_simulation_data(
         interaction_risk = random.choice(INTERACTION_RISK_MAP[selected_component])
 
         # Probability of generating (0,0,0)
-        if random.random() < vulnProb or vulnProb == 0:
+        if random.random() > vulnProb:
             vulnsWML = [0, 0, 0]
+        # Probability of generating vulns
         else:
             # Decide how many vulnerabilities to generate (1, 2, or 3)
             num_vulns = random.randint(1, 3)
@@ -107,13 +108,13 @@ def generate_simulation_data(
             # In case we do not have vulns just fill 0
             while len(vulnsWML) < 3:
                 vulnsWML.append(0)
-
+        
             # Check if any value in the list is >= 5.3
             if max(vulnsWML) >= 5.3:
                 vulnsWML = [max(vulnsWML), 0, 0]
             else:
                 vulnsWML.sort(reverse=True)
-
+        
         data = [
             # Random Types of components
             selected_component,
@@ -377,18 +378,6 @@ def main():
         seedValue = random.randint(1, 10000)
     print(f"Using seed {seedValue}")
     random.seed(seedValue)
-
-    #Default values
-    numberECUs = 25
-    vulnProb = 0.5 
-    minVuln = 0  # Min value allowed
-    maxVuln = 6.9  # Max value allowed is 6.9
-    categoriesValues = [[], [], [], []]
-    nr_runs = 1
-    # ADAS, Powertrain, HMI, Body, Chassis
-    domainWeight = [0.20, 0.20, 0.20, 0.20, 0.20]
-    # QM, A, B, C, D
-    safetyWeight = [0.20, 0.20, 0.20, 0.20, 0.20]
     
     if type == "auto":
         nr_runs = args.runs
@@ -398,7 +387,7 @@ def main():
         numberECUs = random.randint(0, 100)
         vulnProb = round(random.uniform(0, 1), 1)
         maxVuln = round(random.uniform(0, 6.9), 1)
-        seedValue = random.randint(0, 1000)
+        minVuln = round(random.uniform(0, maxVuln), 1)
 
         domainWeight = [
             round(random.uniform(0, 1), 1),  # Type ADAS
@@ -421,9 +410,9 @@ def main():
             nr_runs = int(input("How many times would you like to repeat the simulation: "))
         
         numberECUs = int(input("How many ECU's do you wish to simulate (e.g values between 0 and 100): "))
-        vulnProb = float(input("Enter the probability of generating components without vulnerabilities (e.g values between 0 and 1): "))
-        maxVuln = float(input("Enter the probability of generating components without vulnerabilities (e.g values between 0 and 6.9): "))
-        seedValue = int(input("Enter your seed for the random generator (e.g values between 0 and 1000): "))
+        vulnProb = float(input("Enter vulnerability probability (0 = no vulnerabilities, 1 = always vulnerable):): "))
+        maxVuln = float(input("Maximum vulnerability score (e.g values between 0 and 6.9): "))
+        minVuln = float(input("Minimum vulnerability score (e.g values between 0 and 6.9, must be less than maximum): "))
         domainWeight = [
             # Type ADAS
             float(input("Enter probability for generating components type ADAS (e.g values between 0 and 1):")),
