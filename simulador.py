@@ -11,9 +11,69 @@ from statistics import stdev, median
 FILENAME_RESULTS = "simulation.csv"
 FILENAME_RAW = "data.txt"
 
-
 COMPONENT_TYPES = ["ADAS", "Powertrain", "HMI", "Body", "Chassis"]
 """The Type of components that can be used in the simulation"""
+
+SECURITY_FEATURES = {
+"""
+SECURITY_FEATURES dictionary with assumed weight values.
+- Base vulnerability probability is 1.0 (ECU completely unsecure).
+- Minimum achievable vulnerability probability is 0.05 (no system can be fully secure).
+- Weights represent how much each feature reduces vulnerability.
+- Sub-features are mutually exclusive within their parent feature (e.g., JTAG locks, Firewalls, Secure Diagnostics).
+- These weights are illustrative assumptions and should be adapted to real risk based on industry alignments.
+"""
+    # ----------------------------
+    # Intrusion Systems
+    # ----------------------------
+    "IDS - AI Intrusion Detection": 0.02,
+    "IPS - AI Intrusion Prevention": 0.02,
+
+    # ----------------------------
+    # Secure Boot & Firmware Updates
+    # ----------------------------
+    "Secure Boot": 0.06,
+    "Secure Flashing": 0.06,
+    "Secure Updates (OTA)": 0.05,
+
+    # ----------------------------
+    # Secure Communication & Debugging (includes JTAG locks with (mutually exclusive))
+    # ----------------------------
+    "Secure Communication (SECoc)": 0.05,
+    "JTAG Lock": {
+        "JTAG Lock - Single Password": 0.015,
+        "JTAG Lock - Individual Password Per ECU": 0.025
+    },
+
+    # ----------------------------
+    # Secure Diagnostics (mutually exclusive)
+    # ----------------------------
+    "Secure Diagnostics": {
+        "Secure Diagnostics (UDS 0x27 - SecurityAccess)": 0.015,
+        "Secure Diagnostics (UDS 0x29 - Authenticated)": 0.025
+    },
+
+    # ----------------------------
+    # Hardware Security Module (HSM)
+    # ----------------------------
+    "HSM - Secure Key Storage": 0.05,
+
+    # ----------------------------
+    # Firewalls
+    # ----------------------------
+    "Firewall": {
+        "Firewall - Whitelist-Based": 0.06,
+        "Firewall - Blacklist-Based": 0.04
+    },
+    "AI Firewall Adaptation": 0.07, 
+
+    # ----------------------------
+    # Real-time & Fleet Learning
+    # ----------------------------
+    "Real-time Attack Adaptation": 0.09,
+    "AI Learning & Fleet-wide Update": 0.07,
+}
+
 
 SAFETY_LEVELS = ["QM", "A", "B", "C", "D"]
 """ Define the CAL levels that correspond to each safety level """
@@ -148,7 +208,6 @@ def generate_simulation_data(
 
     return (finalData, categoriesValues, finalRating)
 
-
 def checkVulnRange(val: float) -> float:
     """Validate and adjust input values to be within [0.1, 6.9]"""
 
@@ -158,7 +217,6 @@ def checkVulnRange(val: float) -> float:
         return 6.9
     else:
         return val
-
 
 def componentRatingCalculus(valW: float, valM: float, valL: float) -> float:
     """Calculates the component 5-grade rating based on the input values."""
@@ -191,7 +249,6 @@ def componentRatingCalculus(valW: float, valM: float, valL: float) -> float:
 
     return componentRatingfinal_grade
 
-
 def addComponentToCategory(categoriesValues, asil, cal, dp, iso, risk, cRating):
     """Adds the current component to the correct category"""
 
@@ -214,7 +271,6 @@ def addComponentToCategory(categoriesValues, asil, cal, dp, iso, risk, cRating):
             categoriesValues[3].append(cRating)
 
     return categoriesValues
-
 
 def vehicleRatingWeightCalculus(categoriesValues):
     """Calculates the vehicle 5-grade rating part B"""
@@ -247,6 +303,45 @@ def vehicleRatingWeightCalculus(categoriesValues):
 
     return finalScore
 
+def vulbproba_security_feature(type):
+    base_vulnProb = 1.0 # ECU unsecure and without security features
+    min_vulnProb = 0.05 # ECU secure but it is impossible to have a 100% secure system
+    enabled_features = [] # Features available implemented on the ECU
+
+    if type == "manual":        
+        for feature, value in SECURITY_FEATURES.items():
+            if isinstance(value, dict): #mutual exclusion situation with sub-feature detected
+                for sub_feature in value:
+                    response = input(f"Is '{sub_feature}' enabled? (y/n): ").strip().lower()
+                    if response == "y":
+                        enabled_features.append(sub_feature)
+                        break #mutual exclusion after first selection it jumps out.
+            else:
+                response = input(f"Is '{feature}' enabled? (y/n): ").strip().lower()
+                if response == "y":
+                    enabled_features.append(feature)
+            
+    elif type == "auto":
+        for feature, value in SECURITY_FEATURES.items():
+            if isinstance(value, dict): #mutual exclusion situation with sub-feature detected
+                sub_features = list(value.keys()) 
+                chosen_feature = random.choice([None] + sub_features)
+                if chosen_feature:
+                    enabled_features.append(chosen_feature) 
+            else: 
+                if random.choice([True, False]):
+                    enabled_features.append(feature)
+       
+    for feature in enabled_features:
+        base_vulnProb -= SECURITY_FEATURES.get(feature, 0)
+
+        base_vulnProb = max(base_vulnProb, min_vulnProb)
+        base_vulnProb = round(base_vulnProb, 2)
+
+    print("Enabled features:", enabled_features)
+    print("Vulnerability probability:", base_vulnProb)
+
+    return base_vulnProb
 
 def write_to_file_raw(data, seedValue, runNr, totalRuns, format="pickle"):
     """Write the raw data to a file, including seedValue, run number and total number of runs to do"""
@@ -267,7 +362,6 @@ def write_to_file_raw(data, seedValue, runNr, totalRuns, format="pickle"):
     else:  # any other format is bare
         with open(FILENAME_RAW, mode="a", newline="", encoding="utf-8") as file_raw:
             print(objToWrite, file=file_raw)
-
 
 def write_to_file(data, categoriesValues, finalRating=0.0, seedValue=0, runNr=0, totalRuns=0):
     """Write the generated simulation data to a CSV file."""
@@ -376,8 +470,6 @@ def main():
 
     if seedValue == 0:
         seedValue = random.randint(1, 10000)
-    print(f"Using seed {seedValue}")
-    random.seed(seedValue)
     
     if type == "auto":
         nr_runs = args.runs
@@ -385,7 +477,7 @@ def main():
             nr_runs = int(input("How many times would you like to repeat the simulation: "))
 
         numberECUs = random.randint(0, 100)
-        vulnProb = round(random.uniform(0, 1), 1)
+        vulnProb = vulbproba_security_feature(type)
         maxVuln = round(random.uniform(0, 6.9), 1)
         minVuln = round(random.uniform(0, maxVuln), 1)
 
@@ -396,7 +488,6 @@ def main():
             round(random.uniform(0, 1), 1),  # Type Body
             round(random.uniform(0, 1), 1),  # Type Chassi
         ]
-
         safetyWeight = [
         round(random.uniform(0, 1), 1),  # Type QM
         round(random.uniform(0, 1), 1),  # Type A
@@ -410,7 +501,7 @@ def main():
             nr_runs = int(input("How many times would you like to repeat the simulation: "))
         
         numberECUs = int(input("How many ECU's do you wish to simulate (e.g values between 0 and 100): "))
-        vulnProb = float(input("Enter vulnerability probability (0 = no vulnerabilities, 1 = always vulnerable):): "))
+        vulnProb = vulbproba_security_feature(type)
         maxVuln = float(input("Maximum vulnerability score (e.g values between 0 and 6.9): "))
         minVuln = float(input("Minimum vulnerability score (e.g values between 0 and 6.9, must be less than maximum): "))
         domainWeight = [
