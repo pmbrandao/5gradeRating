@@ -267,7 +267,7 @@ def addComponentToCategory(categoriesValues, asil, cal, dp, iso, risk, cRating):
     # Check if component rating is between 0 and 5
     if cRating >= 0 and cRating <= 5:
         # Class D
-        if (asil == "D" or asil == "C") or ((asil == "B" or asil == "A") and (cal == 4 or cal == 3) and risk == "High"):
+        if (asil == "D" or asil == "C") or (asil == "B" or asil == "A") and (cal == 4 or cal == 3):
             categoriesValues[0].append(cRating)
 
         # Class C
