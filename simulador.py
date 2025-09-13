@@ -14,7 +14,6 @@ FILENAME_RAW = "data.txt"
 COMPONENT_TYPES = ["ADAS", "Powertrain", "HMI", "Body", "Chassis"]
 """The Type of components that can be used in the simulation"""
 
-SECURITY_FEATURES = {
 """
 SECURITY_FEATURES dictionary with assumed weight values.
 - Base vulnerability probability is 1.0 (ECU completely unsecure).
@@ -23,50 +22,63 @@ SECURITY_FEATURES dictionary with assumed weight values.
 - Sub-features are mutually exclusive within their parent feature (e.g., JTAG locks, Firewalls, Secure Diagnostics).
 - These weights are illustrative assumptions and should be adapted to real risk based on industry alignments.
 """
-    # ----------------------------
-    # Intrusion Systems
-    # ----------------------------
-    "IDS - AI Intrusion Detection": 0.02,
-    "IPS - AI Intrusion Prevention": 0.02,
-
+SECURITY_FEATURES = {
     # ----------------------------
     # Secure Boot & Firmware Updates
     # ----------------------------
     "Secure Boot": 0.06,
+    
+    # ----------------------------
+    # Secure Firmware Flashing/Updates
+    # ----------------------------
     "Secure Flashing": 0.06,
     "Secure Updates (OTA)": 0.05,
 
+    # Hardware Security Module (HSM)
     # ----------------------------
-    # Secure Communication & Debugging (includes JTAG locks with (mutually exclusive))
+    # Full  = EVITA Full HSM (includes secure key storage, symmetric and asymmetric cryptography, secure execution)
+    # Medium = EVITA Medium / SHE module (secure key storage + symmetric cryptography, no asymmetric support)
+    "HSM Evita": {
+        "HSM Evita - Full": 0.25,
+        "HSM Evita - Medium": 0.15
+    },
+
     # ----------------------------
-    "Secure Communication (SECoc)": 0.05,
+    # Secure Communication (includes SECoc)
+    # ----------------------------
+    "Secure Communication (SECoc)": 0.10,
+
+    # ----------------------------
+    # Secure Debugging (includes JTAG locks with (mutually exclusive))
+    # ----------------------------
     "JTAG Lock": {
-        "JTAG Lock - Single Password": 0.015,
-        "JTAG Lock - Individual Password Per ECU": 0.025
+        "JTAG Lock - Single Password": 0.06,
+        "JTAG Lock - Individual Password Per ECU": 0.10
     },
 
     # ----------------------------
     # Secure Diagnostics (mutually exclusive)
     # ----------------------------
     "Secure Diagnostics": {
-        "Secure Diagnostics (UDS 0x27 - SecurityAccess)": 0.015,
-        "Secure Diagnostics (UDS 0x29 - Authenticated)": 0.025
+        "Secure Diagnostics (UDS 0x27 - SecurityAccess)": 0.06,
+        "Secure Diagnostics (UDS 0x29 - Authenticated)": 0.12
     },
 
     # ----------------------------
-    # Hardware Security Module (HSM)
+    # Intrusion Systems
     # ----------------------------
-    "HSM - Secure Key Storage": 0.05,
+    "IDS - AI Intrusion Detection": 0.02,
+    "IPS - AI Intrusion Prevention": 0.06,
 
     # ----------------------------
     # Firewalls
     # ----------------------------
     "Firewall": {
-        "Firewall - Whitelist-Based": 0.06,
-        "Firewall - Blacklist-Based": 0.04
+        "Firewall - Whitelist-Based": 0.14,
+        "Firewall - Blacklist-Based": 0.10
     },
     "AI Firewall Adaptation": 0.07, 
-
+    
     # ----------------------------
     # Real-time & Fleet Learning
     # ----------------------------
@@ -259,11 +271,11 @@ def addComponentToCategory(categoriesValues, asil, cal, dp, iso, risk, cRating):
             categoriesValues[0].append(cRating)
 
         # Class C
-        elif ((asil == "B" or asil == "A") and cal == 2 and dp == "Yes") or risk in ["Moderate", "Low"]:
+        elif ((asil == "B" or asil == "A") and cal == 2 and dp == "Yes") or risk in ["High","Moderate"]:
             categoriesValues[1].append(cRating)
 
         # Class B
-        elif ((asil == "B" or asil == "A") and cal == 2 and dp == "No" and iso == "No") or risk in ["Low", "None"]:
+        elif ((asil == "B" or asil == "A") and cal == 2 and dp == "No" and iso == "No") or risk in ["Moderate","Low"]:
             categoriesValues[2].append(cRating)
 
         # Class A (other types)
@@ -307,36 +319,38 @@ def vulbproba_security_feature(type):
     base_vulnProb = 1.0 # ECU unsecure and without security features
     min_vulnProb = 0.05 # ECU secure but it is impossible to have a 100% secure system
     enabled_features = [] # Features available implemented on the ECU
-
+    
     if type == "manual":        
         for feature, value in SECURITY_FEATURES.items():
             if isinstance(value, dict): #mutual exclusion situation with sub-feature detected
-                for sub_feature in value:
+                for sub_feature, sub_value in value.items():
                     response = input(f"Is '{sub_feature}' enabled? (y/n): ").strip().lower()
                     if response == "y":
                         enabled_features.append(sub_feature)
+                        base_vulnProb -= sub_value
                         break #mutual exclusion after first selection it jumps out.
             else:
                 response = input(f"Is '{feature}' enabled? (y/n): ").strip().lower()
                 if response == "y":
                     enabled_features.append(feature)
+                    base_vulnProb -=value
             
     elif type == "auto":
         for feature, value in SECURITY_FEATURES.items():
             if isinstance(value, dict): #mutual exclusion situation with sub-feature detected
-                sub_features = list(value.keys()) 
+                sub_features = list(value.items()) 
                 chosen_feature = random.choice([None] + sub_features)
                 if chosen_feature:
-                    enabled_features.append(chosen_feature) 
+                    sub_feature, sub_value = chosen_feature
+                    enabled_features.append(sub_feature)
+                    base_vulnProb -=sub_value 
             else: 
                 if random.choice([True, False]):
                     enabled_features.append(feature)
+                    base_vulnProb -=value
        
-    for feature in enabled_features:
-        base_vulnProb -= SECURITY_FEATURES.get(feature, 0)
-
-        base_vulnProb = max(base_vulnProb, min_vulnProb)
-        base_vulnProb = round(base_vulnProb, 2)
+    base_vulnProb = max(base_vulnProb, min_vulnProb)
+    base_vulnProb = round(base_vulnProb, 2)
 
     print("Enabled features:", enabled_features)
     print("Vulnerability probability:", base_vulnProb)
